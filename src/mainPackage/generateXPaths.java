@@ -1,10 +1,14 @@
 package mainPackage;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -19,12 +23,15 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 
-public class generateXPaths {
+
+
+public class generateXPaths{
 	String tagname;
 	String xpath = null;
 	String name_attrib;
 	String class_attrib;
 	String text;
+	String tempURL = null;
 
 	boolean browser = false;
 
@@ -36,9 +43,37 @@ public class generateXPaths {
 
 	public static String systempath = System.getProperty("user.home") + "/Desktop";
 	String LINE_SEPARATOR = "\r\n";
-
+	
+//	public void run(WebDriver driver)
+//	{
+//		try
+//		{
+//			tempURL = driver.getCurrentUrl();
+//			System.out.println("webpage is open");
+//			
+//		}
+//		catch(Exception e)
+//		{
+//			System.out.println("webpage is closed");
+//			if(browser==true)
+//			{
+//			driver.quit();
+//			browser = false;
+//			}
+//		}
+//	
+////		while(browser == true)
+//	}
+	
+	//*******************************************************************************************
+	//*************This function is used to highlight the selected XPath element*****************
+	//*******************************************************************************************
+	
 	public WebElement highlightElement(String abc, WebDriver driver) {
-		WebElement elem = driver.findElement(By.xpath(abc));
+		WebElement elem = null;
+		try
+		{
+		elem = driver.findElement(By.xpath(abc));
 		unhighlightLast(driver);
 
 		// remember the new element
@@ -49,9 +84,47 @@ public class generateXPaths {
 		// ((JavascriptExecutor)driver).executeScript("arguments[0].style.border
 		// = '3px solid red'", elem);
 		// }
+		
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();;
+		}
 		return elem;
 	}
+	
+	//*******************************************************************************************
+	//**********This function is used to highlight appropriate frame on selecting it*************
+	//*******************************************************************************************
+	
+	public WebElement highlightElement(WebElement element, WebDriver driver) {
+		
+		try
+		{
+		
+		unhighlightLast(driver);
 
+		// remember the new element
+		lastElem = element;
+		lastBorder = (String) (((JavascriptExecutor) driver).executeScript(SCRIPT_GET_ELEMENT_BORDER, element));
+		// if(driver instanceof JavascriptExecutor)
+		// {
+		// ((JavascriptExecutor)driver).executeScript("arguments[0].style.border
+		// = '3px solid red'", elem);
+		// }
+		
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();;
+		}
+		return element;
+	}
+	
+	//*******************************************************************************************
+	//*************This function is used to unhighlight the selected XPath element***************
+	//*******************************************************************************************
+	
 	void unhighlightLast(WebDriver driver) {
 		if (lastElem != null) {
 			try {
@@ -66,18 +139,14 @@ public class generateXPaths {
 			}
 		}
 	}
-
-	public WebDriver gotoURL(WebDriver driver, String url,Combo iframe) {
-		iframe.removeAll();
-		// try{
-		//
-		// driver.get(url);
-		// }
-		// catch(Exception e)
-		// {
-		// driver = new ChromeDriver();
-		// driver.get(url);
-		// }
+	
+	//*******************************************************************************************
+	//****************This function is used to navigate to the provided URL**********************
+	//*******************************************************************************************
+		
+	public WebDriver gotoURL(WebDriver driver, String url) {
+		
+		
 		if (browser == false) {
 			driver = new ChromeDriver();
 			driver.get(url);
@@ -85,22 +154,52 @@ public class generateXPaths {
 		} else {
 			driver.get(url);
 		}
-		
-		List<WebElement> list = driver.findElements(By.xpath("//iframe"));
-		
-		if (list.size() > 0)
-		{
-			for(int i=0;i<list.size();i++)
-			iframe.add("iframe "+i+1);
-		}
-		
 		return driver;
+		
+		
 
 	}
 
-	public ArrayList<String> generate(WebDriver mainDriver, ProgressBar progressBar, Label status,Combo iframe) throws Exception {
-		status.setText("In Progress...");
+	//*******************************************************************************************
+	//*********************This function is used to fetch all iframes****************************
+	//*******************************************************************************************
+	
+	public HashMap iFrameFetch(WebDriver driver,Combo iframe)
+	{
 		iframe.removeAll();
+		List<WebElement> list = driver.findElements(By.xpath("//iframe"));
+		HashMap<Integer, WebElement> iFrameElements = new HashMap<Integer, WebElement>();
+		if (list.size() > 0)
+		{
+			int i = 1;
+		    for (WebElement element : list) 
+		    {
+		        iFrameElements.put(i,element);
+		        iframe.add(String.valueOf(i));
+		        i++;
+		    }
+			
+		}
+		
+		return iFrameElements;
+	}
+
+	//*******************************************************************************************
+	//*************This function is used to switch to the appropriate iframe*********************
+	//*******************************************************************************************
+	
+	public void switchIFrame(WebDriver driver,WebElement iFrameElement)
+	{
+		driver.switchTo().frame(iFrameElement);
+	}
+	
+	//*******************************************************************************************
+	//**************This function is used to generate all XPath of a web page********************
+	//*******************************************************************************************
+	
+	public ArrayList<String> generate(WebDriver mainDriver, ProgressBar progressBar, Label status) throws Exception {
+		status.setText("In Progress...");
+		
 		List<WebElement> elements = mainDriver.findElements(By.xpath("//*"));
 		ArrayList<String> arr = new ArrayList<String>();
 		HashSet hs = new HashSet();
@@ -152,72 +251,173 @@ public class generateXPaths {
 		arr.addAll(hs);
 		status.setText("Extraction Complete");
 		
-		List<WebElement> list = mainDriver.findElements(By.xpath("//iframe"));
 		
-		if (list.size() > 0)
-		{
-			for(int i=0;i<list.size();i++)
-			iframe.add("iframe "+i+1);
-		}
 		
 		return (arr);
 
-		// for (int j=0; j<arr.size();j++)
-		// {
-		// System.out.println(arr.get(j)+"\n");
-		// }
+	}
+	
+	
+	//*******************************************************************************************
+	//**************************This function is used to copy XPath******************************
+	//*******************************************************************************************
+	
+	public void copyXPath(String xpath)
+	{
+		StringSelection stringSelection = new StringSelection(xpath);
+		Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+		clipboard.setContents(stringSelection, null);
+	}
+	
+	
+	//*******************************************************************************************
+	//*********This function is used to copy XPath contents and open New Notepad file************
+	//*******************************************************************************************
+	
+	
+	public void exportToNotepad(String[] items, String path)
+	{
+
+
+	
+		try {
+//				
+					PrintWriter writer = new PrintWriter(path,"UTF-8");
+					for(int i=0;i<items.length;i++)
+					writer.println(items[i]+ LINE_SEPARATOR);
+					writer.close();
+
+			
+		} 
+		catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
+//		}
+		
+		
 
 	}
-
-	public void exportToKatalon(WebDriver driver, Text xpathtraverse, String elementXpath, int filenumber)
+	public String renameString(String elementXpath,WebDriver driver)
+	{
+		String elementName = driver.findElement(By.xpath(elementXpath)).getText();
+		elementName.replaceAll("[^a-zA-Z0-9\\s+]", "");
+		String abc[] = elementName.split(" ");
+		String finalData="";
+		for(int i = 0;i<abc.length;i++)
+		{
+			if(i==0)
+			{
+			finalData=finalData+abc[0].toLowerCase();
+			}
+			else
+			{
+				abc[i] = abc[i].toLowerCase();
+				abc[i] = abc[i].replace(abc[i].charAt(0), (char) (abc[i].charAt(0)-32));
+				finalData=finalData+abc[i];
+			    
+			}
+			
+		}
+		System.out.println("Final String is : "+ finalData);
+		return finalData;
+	}
+	
+	//*******************************************************************************************
+	//**************************This function is used to export to Katalon***********************
+	//*******************************************************************************************
+	
+	public void exportToKatalon(WebDriver driver, Text xpathtraverse, String elementXpath, int filenumber, String path)
 			throws FileNotFoundException, UnsupportedEncodingException {
 		// TODO Auto-generated method stub
 		String elementName = null;
 		String elementType = null;
 		String tagName = driver.findElement(By.xpath(elementXpath)).getTagName();
 		String typeAttrib = null;
-		if (tagName.equals("input")) {
+		String valueAttrib = driver.findElement(By.xpath(elementXpath)).getAttribute("value");
+		String nameAttrib = driver.findElement(By.xpath(elementXpath)).getAttribute("name");
+		
+		if (tagName.equals("input")) 
+		{
+			if(nameAttrib == null)
+			{
+				elementName = valueAttrib;
+			}
+			else
+			{
+				elementName = nameAttrib;
+			}
+			
 			typeAttrib = driver.findElement(By.xpath(elementXpath)).getAttribute("type");
 			if(typeAttrib.equals("submit")) 
 			{
-				//Btn
+				elementType ="Button";
 			}
 			else if(typeAttrib.equals("text"))
 			{
-				//TxtBox
+				elementType ="InputBox";
 			}
 			else if(typeAttrib.equals("checkbox"))
 			{
-				//Chk
+				elementType ="CheckBox";
 			}
-			else if(typeAttrib.equals("checkbox"))
+			else if(typeAttrib.equals("radio"))
 			{
-				//Rad
+				elementType ="RadioButton";
 			}
-		} else if (tagName.equals("select")) {
-			elementType = "Drpdn";
+		} 
+		else if (tagName.equals("select")) 
+		{
+			if(nameAttrib == null)
+			{
+				elementName = valueAttrib;
+			}
+			else
+			{
+				elementName = nameAttrib;
+			}
+			elementType = "DropDown";
+		}
+		else if (tagName.equals("a"))
+		{
+			try
+			{
+				elementName = renameString(elementXpath,driver);
+				elementName = elementName.substring(0,15);
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+				elementName = renameString(elementXpath,driver);
+			}
+			elementType = "Link";
 		}
 		else
 		{
-			//Txt
-			//Link
+			try
+			{
+				elementName = renameString(elementXpath,driver);
+				elementName = elementName.substring(0,15);
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+				elementName = renameString(elementXpath,driver);
+			}
+			elementType = "Text";
 		}
-		// input[@type="button"]
-
-		File folder = new File(systempath + "/ObjectRepo/" + xpathtraverse.getText());
-		folder.mkdir();
-
-		// if (!folder.exists()) {
-		// try {
-		// folder.createNewFile();
-		// } catch (Exception ex) {
-		// ex.printStackTrace();
-		// }
-		// }
-
-		PrintWriter writer = new PrintWriter(
-				systempath + "/ObjectRepo/" + xpathtraverse.getText() + elementName + "_" + elementType + ".rs",
-				"UTF-8");
+		File file = new File(path+"/ObjectRepo/"+xpathtraverse.getText());
+	      //Creating the directory
+	      boolean bool = file.mkdir();
+		PrintWriter writer = new PrintWriter(path+"/ObjectRepo/"+xpathtraverse.getText()+elementName + "_" + elementType + ".rs","UTF-8");
+//		File folder = new File(systempath + "/ObjectRepo/" + xpathtraverse.getText());
+//		folder.mkdir();
+//
+//		PrintWriter writer = new PrintWriter(
+//				systempath + "/ObjectRepo/" + xpathtraverse.getText() + elementName + "_" + elementType + ".rs",
+//				"UTF-8");
+		
 		writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" + LINE_SEPARATOR + "<WebElementEntity>"
 				+ LINE_SEPARATOR + "<description></description>" + LINE_SEPARATOR + "<name>" + elementName + "_"
 				+ elementType + "</name>" + LINE_SEPARATOR + "<tag></tag>" + LINE_SEPARATOR

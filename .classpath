@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="src" path="/XPathGetter"/>
 	<classpathentry kind="lib" path="C:/Users/a1001362/Downloads/selenium-java-3.141.59/libs/byte-buddy-1.8.15.jar"/>
 	<classpathentry kind="lib" path="C:/Users/a1001362/Downloads/selenium-java-3.141.59/libs/commons-exec-1.3.jar"/>
 	<classpathentry kind="lib" path="C:/Users/a1001362/Downloads/selenium-java-3.141.59/libs/guava-25.0-jre.jar"/>
@@ -11,5 +10,7 @@
 	<classpathentry kind="lib" path="C:/Users/a1001362/Downloads/selenium-java-3.141.59/client-combined-3.141.59.jar"/>
 	<classpathentry kind="lib" path="C:/Users/a1001362/Downloads/selenium-java-3.141.59/client-combined-3.141.59-sources.jar"/>
 	<classpathentry kind="lib" path="swing2swt.jar"/>
+	<classpathentry kind="lib" path="C:/Users/a1001362/Downloads/swt/swt.jar"/>
+	<classpathentry kind="lib" path="C:/Users/a1001362/Downloads/swt/swt-debug.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
